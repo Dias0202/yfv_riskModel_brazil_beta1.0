@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yellow Fever Risk – Scenario Maps</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Yellow Fever Risk Modelling – Brazil</h1>
+    <nav class="site-nav">
+      <a href="index.html" class="active">Scenarios</a>
+      <a href="casos.html">Observed cases (placeholder)</a>
+      <a href="modelo.html">Model & metrics (placeholder)</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="controls">
+      <h2>Scenario selection</h2>
+      <label for="scenarioSelect">Scenario:</label>
+      <select id="scenarioSelect"></select>
+
+      <h2>Search municipality</h2>
+      <input
+        id="municipalitySearch"
+        type="text"
+        placeholder="Type a municipality name (e.g., Belo Horizonte)…"
+        autocomplete="off"
+      />
+      <div id="searchSuggestions" class="suggestions"></div>
+
+      <div id="infoPanel" class="info-panel">
+        <h3>Selected municipality</h3>
+        <p><strong>Name:</strong> <span id="infoName">–</span></p>
+        <p><strong>IBGE code:</strong> <span id="infoCode">–</span></p>
+        <p><strong>Predicted risk:</strong> <span id="infoRisk">–</span></p>
+      </div>
+    </section>
+
+    <section class="map-container">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
