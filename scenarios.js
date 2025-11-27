@@ -6,10 +6,6 @@
 const GEOJSON_URL = "data/br_municipios_2022_simplified.geojson";
 
 // Pasta onde estão os CSVs dos cenários.
-// Exemplo de arquivos esperados:
-//   data/scenarios/A_climate_only.csv
-//   data/scenarios/B_vaccination_up.csv
-//   ...
 const SCENARIOS_BASE_PATH = "data/scenarios";
 
 // Descrição dos cenários (texto exibido abaixo de "Selected municipality")
@@ -37,7 +33,7 @@ const SCENARIO_DESCRIPTIONS = {
 let mapScenario = null;
 let baseGeoJSONData = null; // GeoJSON em memória
 let scenarioLayer = null;   // camada atual
-let riskLookup = {};        // { cod7: risk_prob }  <-- IMPORTANTE: 7 dígitos
+let riskLookup = {};        // { cod6: risk_prob }  <-- chave em 6 dígitos
 
 // ======================
 // INICIALIZAÇÃO
@@ -105,18 +101,17 @@ async function loadScenarioCSV(scenId) {
   }
 
   const header = lines[0].split(",");
-  // Tenta achar coluna de código de município
+  // coluna de código
   let idxCod = header.indexOf("cod_mun");
   if (idxCod === -1) {
     idxCod = header.indexOf("CD_MUN");
   }
-
-  // Tenta achar coluna de risco
+  // coluna de risco
   let idxRisk = header.indexOf("risk_prob");
   if (idxRisk === -1) {
     idxRisk = header.indexOf("risk");
     if (idxRisk === -1 && header.length > 1) {
-      idxRisk = 1; // fallback: segunda coluna
+      idxRisk = 1;
     }
   }
 
@@ -135,16 +130,20 @@ async function loadScenarioCSV(scenId) {
     const row = lines[i].split(",");
     if (row.length <= Math.max(idxCod, idxRisk)) continue;
 
-    let cod = row[idxCod].trim();
+    let codRaw = row[idxCod].trim();
     let risk = parseFloat(row[idxRisk]);
+    if (!codRaw || isNaN(risk)) continue;
 
-    if (!cod || isNaN(risk)) continue;
+    // >>> CSV: temos 7 dígitos (ex: "0110001"), mas o que importa são os 6 últimos ("110001")
+    codRaw = codRaw.replace(/\D/g, ""); // só dígitos
+    let cod6;
+    if (codRaw.length >= 6) {
+      cod6 = codRaw.slice(-6); // 6 últimos dígitos
+    } else {
+      cod6 = codRaw.padStart(6, "0");
+    }
 
-    // AGORA: usamos 7 dígitos, igual ao GeoJSON (CD_MUN / CD_MUN_STR)
-    cod = cod.replace(/\D/g, "");    // só dígitos
-    cod = cod.padStart(7, "0");      // garante 7 dígitos
-
-    tmpLookup[cod] = risk;
+    tmpLookup[cod6] = risk;
   }
 
   riskLookup = tmpLookup;
@@ -209,11 +208,14 @@ function styleFeatureByRisk(feature) {
     cod7 = String(props.cod_mun);
   }
 
+  let cod6 = null;
   if (cod7) {
-    cod7 = cod7.replace(/\D/g, "").padStart(7, "0");
+    const raw = cod7.replace(/\D/g, "");
+    
+    cod6 = raw.slice(0, 6);
   }
 
-  const risk = cod7 ? riskLookup[cod7] : null;
+  const risk = cod6 ? riskLookup[cod6] : null;
 
   const fillColor = risk == null ? "#f0f0f0" : riskColorScale(risk);
 
@@ -228,7 +230,6 @@ function styleFeatureByRisk(feature) {
 
 // Escala simples de cor para risco (vermelho em gradiente)
 function riskColorScale(risk) {
-  // risco esperado ~0–0.3, mas pode ir acima em hotspots
   if (risk >= 0.25) return "#800026";
   if (risk >= 0.15) return "#BD0026";
   if (risk >= 0.10) return "#E31A1C";
@@ -255,11 +256,13 @@ function onEachFeatureScenario(feature, layer) {
     cod7 = String(props.cod_mun);
   }
 
+  let cod6 = null;
   if (cod7) {
-    cod7 = cod7.replace(/\D/g, "").padStart(7, "0");
+    const raw = cod7.replace(/\D/g, "");
+    cod6 = raw.slice(0, 6);
   }
 
-  const risk = cod7 ? riskLookup[cod7] : null;
+  const risk = cod6 ? riskLookup[cod6] : null;
 
   const nameElem = document.getElementById("municipality-name");
   const riskElem = document.getElementById("risk-value");
@@ -269,7 +272,6 @@ function onEachFeatureScenario(feature, layer) {
     riskElem.textContent = risk == null ? "No data" : risk.toFixed(3);
   }
 
-  // Popup opcional no mapa
   if (risk == null) {
     layer.bindPopup(`${name}<br><em>No data</em>`).openPopup();
   } else {
