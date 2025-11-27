@@ -36,8 +36,8 @@ const SCENARIO_DESCRIPTIONS = {
 
 let mapScenario = null;
 let baseGeoJSONData = null; // GeoJSON em memória
-let scenarioLayer = null; // camada atual
-let riskLookup = {}; // { cod6: risk_prob }
+let scenarioLayer = null;   // camada atual
+let riskLookup = {};        // { cod7: risk_prob }  <-- IMPORTANTE: 7 dígitos
 
 // ======================
 // INICIALIZAÇÃO
@@ -86,7 +86,6 @@ async function initScenarioMap() {
 // ======================
 
 async function loadScenarioCSV(scenId) {
-  // Ex: data/scenarios/A_climate_only.csv
   const csvPath = `${SCENARIOS_BASE_PATH}/${scenId}.csv`;
   console.log("Carregando CSV do cenário:", csvPath);
 
@@ -98,7 +97,7 @@ async function loadScenarioCSV(scenId) {
   }
 
   const text = await res.text();
-  const lines = text.trim().split("\n");
+  const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) {
     console.warn("CSV vazio ou sem linhas de dados.");
     riskLookup = {};
@@ -109,23 +108,21 @@ async function loadScenarioCSV(scenId) {
   // Tenta achar coluna de código de município
   let idxCod = header.indexOf("cod_mun");
   if (idxCod === -1) {
-    // fallback: tenta "CD_MUN"
     idxCod = header.indexOf("CD_MUN");
   }
 
   // Tenta achar coluna de risco
   let idxRisk = header.indexOf("risk_prob");
   if (idxRisk === -1) {
-    // fallback: "risk" ou segunda coluna
     idxRisk = header.indexOf("risk");
     if (idxRisk === -1 && header.length > 1) {
-      idxRisk = 1; // chute: segunda coluna é o risco
+      idxRisk = 1; // fallback: segunda coluna
     }
   }
 
   if (idxCod === -1 || idxRisk === -1) {
     console.error(
-      "CSV não tem colunas esperadas. Cabeçalho encontrado:",
+      "CSV não tem colunas esperadas (cod_mun / risk_prob). Cabeçalho encontrado:",
       header
     );
     riskLookup = {};
@@ -143,9 +140,9 @@ async function loadScenarioCSV(scenId) {
 
     if (!cod || isNaN(risk)) continue;
 
-    // cod_mun no CSV tem 6 dígitos → garante isso
-    cod = cod.replace(/\D/g, ""); // remove qualquer caractere não numérico
-    cod = cod.padStart(6, "0");
+    // AGORA: usamos 7 dígitos, igual ao GeoJSON (CD_MUN / CD_MUN_STR)
+    cod = cod.replace(/\D/g, "");    // só dígitos
+    cod = cod.padStart(7, "0");      // garante 7 dígitos
 
     tmpLookup[cod] = risk;
   }
@@ -209,17 +206,14 @@ function styleFeatureByRisk(feature) {
   } else if (props.CD_MUN) {
     cod7 = String(props.CD_MUN);
   } else if (props.cod_mun) {
-    // caso você tenha salvo "cod_mun" como 7 dígitos no GeoJSON
     cod7 = String(props.cod_mun);
   }
 
-  let cod6 = null;
   if (cod7) {
-    // IBGE: 7 dígitos → primeiros 6 = cod_mun da série histórica
-    cod6 = cod7.replace(/\D/g, "").slice(0, 6);
+    cod7 = cod7.replace(/\D/g, "").padStart(7, "0");
   }
 
-  const risk = cod6 ? riskLookup[cod6] : null;
+  const risk = cod7 ? riskLookup[cod7] : null;
 
   const fillColor = risk == null ? "#f0f0f0" : riskColorScale(risk);
 
@@ -249,37 +243,38 @@ function riskColorScale(risk) {
 // ======================
 
 function onEachFeatureScenario(feature, layer) {
-  layer.on("click", () => {
-    const props = feature.properties || {};
-    const name = props.NM_MUN || "Unknown";
+  const props = feature.properties || {};
+  const name = props.NM_MUN || "Unknown";
 
-    let cod7 = null;
-    if (props.CD_MUN_STR) {
-      cod7 = String(props.CD_MUN_STR);
-    } else if (props.CD_MUN) {
-      cod7 = String(props.CD_MUN);
-    } else if (props.cod_mun) {
-      cod7 = String(props.cod_mun);
-    }
+  let cod7 = null;
+  if (props.CD_MUN_STR) {
+    cod7 = String(props.CD_MUN_STR);
+  } else if (props.CD_MUN) {
+    cod7 = String(props.CD_MUN);
+  } else if (props.cod_mun) {
+    cod7 = String(props.cod_mun);
+  }
 
-    let cod6 = cod7 ? cod7.replace(/\D/g, "").slice(0, 6) : null;
-    const risk = cod6 ? riskLookup[cod6] : null;
+  if (cod7) {
+    cod7 = cod7.replace(/\D/g, "").padStart(7, "0");
+  }
 
-    const nameElem = document.getElementById("municipality-name");
-    const riskElem = document.getElementById("risk-value");
+  const risk = cod7 ? riskLookup[cod7] : null;
 
-    if (nameElem) nameElem.textContent = name;
-    if (riskElem) {
-      riskElem.textContent = risk == null ? "No data" : risk.toFixed(3);
-    }
+  const nameElem = document.getElementById("municipality-name");
+  const riskElem = document.getElementById("risk-value");
 
-    // Popup opcional no mapa
-    if (risk == null) {
-      layer.bindPopup(`${name}<br><em>No data</em>`).openPopup();
-    } else {
-      layer
-        .bindPopup(`${name}<br>Predicted risk: ${risk.toFixed(3)}`)
-        .openPopup();
-    }
-  });
+  if (nameElem) nameElem.textContent = name;
+  if (riskElem) {
+    riskElem.textContent = risk == null ? "No data" : risk.toFixed(3);
+  }
+
+  // Popup opcional no mapa
+  if (risk == null) {
+    layer.bindPopup(`${name}<br><em>No data</em>`).openPopup();
+  } else {
+    layer
+      .bindPopup(`${name}<br>Predicted risk: ${risk.toFixed(3)}`)
+      .openPopup();
+  }
 }
