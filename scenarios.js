@@ -3,15 +3,14 @@
 // ======================
 
 // GeoJSON dos municípios (simplificado em QGIS).
-// Ajuste se você usar outro caminho/nome.
 const GEOJSON_URL = "data/br_municipios_2022_simplified.geojson";
 
-// Pasta onde estão os CSVs dos cenários gerados em Python.
-// Exemplo de estrutura esperada:
-//   scenarios/A_climate_only/fa_risk.csv
-//   scenarios/B_vaccination_up/fa_risk.csv
+// Pasta onde estão os CSVs dos cenários.
+// Exemplo de arquivos esperados:
+//   data/scenarios/A_climate_only.csv
+//   data/scenarios/B_vaccination_up.csv
 //   ...
-const SCENARIOS_BASE_PATH = "scenarios"; // ajuste se estiver em "Dados/scenarios", etc.
+const SCENARIOS_BASE_PATH = "data/scenarios";
 
 // Descrição dos cenários (texto exibido abaixo de "Selected municipality")
 const SCENARIO_DESCRIPTIONS = {
@@ -60,7 +59,7 @@ async function initScenarioMap() {
   try {
     const res = await fetch(GEOJSON_URL);
     if (!res.ok) {
-      console.error("Erro ao carregar GeoJSON:", res.statusText);
+      console.error("Erro ao carregar GeoJSON:", res.status, res.statusText);
       return;
     }
     baseGeoJSONData = await res.json();
@@ -87,13 +86,13 @@ async function initScenarioMap() {
 // ======================
 
 async function loadScenarioCSV(scenId) {
-  // Ex: scenarios/A_climate_only/fa_risk.csv
-  const csvPath = `${SCENARIOS_BASE_PATH}/${scenId}/fa_risk.csv`;
+  // Ex: data/scenarios/A_climate_only.csv
+  const csvPath = `${SCENARIOS_BASE_PATH}/${scenId}.csv`;
   console.log("Carregando CSV do cenário:", csvPath);
 
   const res = await fetch(csvPath);
   if (!res.ok) {
-    console.error("Erro ao carregar CSV do cenário:", res.statusText);
+    console.error("Erro ao carregar CSV do cenário:", res.status, res.statusText);
     riskLookup = {};
     return;
   }
@@ -107,11 +106,28 @@ async function loadScenarioCSV(scenId) {
   }
 
   const header = lines[0].split(",");
-  const idxCod = header.indexOf("cod_mun");
-  const idxRisk = header.indexOf("risk_prob");
+  // Tenta achar coluna de código de município
+  let idxCod = header.indexOf("cod_mun");
+  if (idxCod === -1) {
+    // fallback: tenta "CD_MUN"
+    idxCod = header.indexOf("CD_MUN");
+  }
+
+  // Tenta achar coluna de risco
+  let idxRisk = header.indexOf("risk_prob");
+  if (idxRisk === -1) {
+    // fallback: "risk" ou segunda coluna
+    idxRisk = header.indexOf("risk");
+    if (idxRisk === -1 && header.length > 1) {
+      idxRisk = 1; // chute: segunda coluna é o risco
+    }
+  }
 
   if (idxCod === -1 || idxRisk === -1) {
-    console.error("CSV não tem as colunas esperadas: cod_mun, risk_prob");
+    console.error(
+      "CSV não tem colunas esperadas. Cabeçalho encontrado:",
+      header
+    );
     riskLookup = {};
     return;
   }
@@ -190,9 +206,11 @@ function styleFeatureByRisk(feature) {
 
   if (props.CD_MUN_STR) {
     cod7 = String(props.CD_MUN_STR);
+  } else if (props.CD_MUN) {
+    cod7 = String(props.CD_MUN);
   } else if (props.cod_mun) {
     // caso você tenha salvo "cod_mun" como 7 dígitos no GeoJSON
-    cod7 = String(props.cod_mun).padStart(7, "0");
+    cod7 = String(props.cod_mun);
   }
 
   let cod6 = null;
@@ -238,8 +256,10 @@ function onEachFeatureScenario(feature, layer) {
     let cod7 = null;
     if (props.CD_MUN_STR) {
       cod7 = String(props.CD_MUN_STR);
+    } else if (props.CD_MUN) {
+      cod7 = String(props.CD_MUN);
     } else if (props.cod_mun) {
-      cod7 = String(props.cod_mun).padStart(7, "0");
+      cod7 = String(props.cod_mun);
     }
 
     let cod6 = cod7 ? cod7.replace(/\D/g, "").slice(0, 6) : null;
