@@ -1,6 +1,7 @@
-// js/app.js
+// js/app.js - VERSÃO CORRIGIDA
 
 // ==== CONFIGURAÇÃO DOS CENÁRIOS ====
+
 const SCENARIOS = {
   A_climate_only: {
     label: "A – Climate only",
@@ -8,13 +9,13 @@ const SCENARIOS = {
     desc: "Future climate (2021–2040, MIROC6 SSP2-4.5) applied to all municipalities; vaccination, population and land-use held at baseline levels."
   },
   B_vaccination_up: {
-    label: "B – Vaccination up",
+    label: "B – Vaccination up", 
     file: "data/scenarios/B_vaccination_up.csv",
     desc: "Same future climate as A, but vaccination coverage increased by 20% in all municipalities."
   },
   C_vaccination_down: {
     label: "C – Vaccination down",
-    file: "data/scenarios/C_vaccination_down.csv",
+    file: "data/scenarios/C_vaccination_down.csv", 
     desc: "Future climate with a 20% reduction in vaccination coverage, amplifying risk in susceptible areas."
   },
   D_population_up: {
@@ -43,11 +44,16 @@ const SCENARIOS = {
 const GEOJSON_URL = "data/br_municipios_2022_simplified.geojson";
 
 // ==== VARIÁVEIS GLOBAIS ====
+
 let map;
 let geojsonLayer;
 let riskByMunicipio = {}; // { cod_mun6: risk_prob }
 let muniIndex = []; // Busca rápida
 let currentScenarioKey = "A_climate_only";
+
+// CORREÇÃO: Variável para armazenar o município selecionado
+let currentSelectedMunicipality = null;
+let currentSelectedLayer = null;
 
 // Elementos da UI
 const scenarioSelect = document.getElementById("scenarioSelect");
@@ -60,20 +66,21 @@ const infoCode = document.getElementById("infoCode");
 const infoRisk = document.getElementById("infoRisk");
 
 // ==== CORES DO RISCO ====
-function getColor(r) {
-  if (r === null || isNaN(r)) return "#f0f0f0";
-  // Ajuste estes limites conforme a distribuição real dos seus dados
-  return r > 0.25 ? "#800026" :
-         r > 0.15 ? "#BD0026" :
-         r > 0.10 ? "#E31A1C" :
-         r > 0.05 ? "#FC4E2A" :
-         r > 0.02 ? "#FD8D3C" :
-         r > 0.01 ? "#FEB24C" :
-         r > 0    ? "#FFEDA0" :
-                    "#FFEDA0";
-}
 
+function getColor(r) {
+  if (r === null || isNaN(r)) return "#f5f5f5";
+  
+  // Foco em destacar riscos acima de 0.05
+  return r >= 0.60 ? "#4a0000" :    // Vermelho muito escuro
+         r >= 0.50 ? "#800026" :    // Vermelho escuro
+         r >= 0.40 ? "#bd0026" :    // Vermelho
+         r >= 0.30 ? "#e31a1c" :    // Vermelho médio
+         r >= 0.20 ? "#fc4e2a" :    // Laranja forte
+         r >= 0.10 ? "#fd8d3c" :    // Laranja
+                     "rgba(248, 230, 180, 1)";     // Quase branco - risco muito baixo
+}
 // ==== ESTILO DO MAPA ====
+
 function styleFeature(feature) {
   // O GeoJSON tem 7 dígitos (ex: 1100015). Convertemos para 6 (110001).
   const cod7 = String(feature.properties.CD_MUN_STR || feature.properties.CD_MUN || "").padStart(7, "0");
@@ -91,6 +98,7 @@ function styleFeature(feature) {
 }
 
 // ==== INTERAÇÃO (CLIQUE) ====
+
 function onEachFeature(feature, layer) {
   const muniName = feature.properties.NM_MUN || "Unknown";
   const cod7 = String(feature.properties.CD_MUN_STR || feature.properties.CD_MUN || "").padStart(7, "0");
@@ -105,6 +113,14 @@ function onEachFeature(feature, layer) {
     if(infoCode) infoCode.textContent = cod7;
     if(infoRisk) infoRisk.textContent = riskText;
 
+    // CORREÇÃO: Salva a seleção atual
+    currentSelectedMunicipality = {
+      name: muniName,
+      cod7: cod7,
+      cod6: cod6
+    };
+    currentSelectedLayer = layer;
+
     // Popup
     layer.bindPopup(
       `<strong>${muniName}</strong><br/>Code: ${cod7}<br/>Risk: ${riskText}`
@@ -112,7 +128,8 @@ function onEachFeature(feature, layer) {
   });
 }
 
-// ==== CARREGAR CSV (A CORREÇÃO ESTÁ AQUI) ====
+// ==== CARREGAR CSV ====
+
 async function loadScenarioCSV(scenarioKey) {
   const scen = SCENARIOS[scenarioKey];
   riskByMunicipio = {};
@@ -147,18 +164,12 @@ async function loadScenarioCSV(scenarioKey) {
       if (!line) continue;
       const cols = line.split(",");
 
-      // --- CORREÇÃO DO CÓDIGO ---
-      // Se vier "0110001", parseInt transforma em 110001 (número), 
-      // e String transforma em "110001" (texto sem zero à esquerda).
       let rawCod = cols[idxCod];
       let cleanCod = String(parseInt(rawCod, 10)); 
       
-      // Garante 6 dígitos (caso o código seja realmente curto, ex: SP 35xxxx)
-      // Mas para o seu caso de 0110001 -> vira 110001 (6 digitos) perfeito.
       if (cleanCod.length === 6) {
          // Código válido
       } else {
-         // Fallback se algo der errado
          cleanCod = cleanCod.padStart(6, "0"); 
       }
       
@@ -176,12 +187,49 @@ async function loadScenarioCSV(scenarioKey) {
       geojsonLayer.setStyle(styleFeature);
     }
 
+    // CORREÇÃO CRÍTICA: Atualiza o município selecionado se existir
+    if (currentSelectedMunicipality) {
+      updateSelectedMunicipalityDisplay();
+    }
+
   } catch (err) {
     console.error("Erro ao carregar CSV:", err);
   }
 }
 
+// ==== NOVA FUNÇÃO: ATUALIZAR MUNICÍPIO SELECIONADO ====
+
+function updateSelectedMunicipalityDisplay() {
+  if (!currentSelectedMunicipality) return;
+
+  const { name, cod7, cod6 } = currentSelectedMunicipality;
+  const risk = riskByMunicipio[cod6];
+  const riskText = risk != null ? risk.toFixed(4) : "No data";
+
+  // Atualiza barra lateral
+  if(infoName) infoName.textContent = name;
+  if(infoCode) infoCode.textContent = cod7;
+  if(infoRisk) infoRisk.textContent = riskText;
+
+  // Atualiza popup se estiver aberto
+  if (currentSelectedLayer && currentSelectedLayer.getPopup()) {
+    currentSelectedLayer.setPopupContent(
+      `<strong>${name}</strong><br/>Code: ${cod7}<br/>Risk: ${riskText}`
+    );
+    
+    // Se o popup estava aberto, reabre com os dados atualizados
+    if (currentSelectedLayer.isPopupOpen()) {
+      currentSelectedLayer.closePopup();
+      // Pequeno delay para garantir atualização
+      setTimeout(() => {
+        currentSelectedLayer.openPopup();
+      }, 50);
+    }
+  }
+}
+
 // ==== INICIALIZAÇÃO GERAL ====
+
 async function initMap() {
   // 1. Mapa Base
   map = L.map("map").setView([-15.0, -55.0], 4); // Centro do Brasil
@@ -243,6 +291,7 @@ async function initMap() {
 }
 
 // ==== LÓGICA DE BUSCA ====
+
 function setupSearch() {
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
@@ -273,6 +322,7 @@ function setupSearch() {
       };
       suggestionsDiv.appendChild(div);
     });
+
     suggestionsDiv.style.display = "block";
   });
 
