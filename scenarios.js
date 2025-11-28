@@ -2,13 +2,9 @@
 // CONFIGURAÇÃO BÁSICA
 // ======================
 
-// GeoJSON dos municípios (simplificado em QGIS).
 const GEOJSON_URL = "data/br_municipios_2022_simplified.geojson";
-
-// Pasta onde estão os CSVs dos cenários.
 const SCENARIOS_BASE_PATH = "data/scenarios";
 
-// Descrição dos cenários (texto exibido abaixo de "Selected municipality")
 const SCENARIO_DESCRIPTIONS = {
   A_climate_only:
     "Future climate (2021–2040, MIROC6 SSP2-4.5) applied to all municipalities; vaccination, population and land-use held at baseline levels.",
@@ -31,9 +27,17 @@ const SCENARIO_DESCRIPTIONS = {
 // ======================
 
 let mapScenario = null;
-let baseGeoJSONData = null; // GeoJSON em memória
-let scenarioLayer = null;   // camada atual
-let riskLookup = {};        // { cod6: risk_prob }  <-- chave em 6 dígitos
+let baseGeoJSONData = null;
+let scenarioLayer = null;
+let riskLookup = {};
+let currentSelectedLayer = null;
+
+// MEMÓRIA DA SELEÇÃO ATUAL
+let currentSelection = {
+  cod6: null,
+  name: null,
+  cod7: null
+};
 
 // ======================
 // INICIALIZAÇÃO
@@ -41,182 +45,251 @@ let riskLookup = {};        // { cod6: risk_prob }  <-- chave em 6 dígitos
 
 document.addEventListener("DOMContentLoaded", () => {
   initScenarioMap();
-  const select = document.getElementById("scenario-select");
-  if (select) {
-    select.addEventListener("change", updateScenarioFromSelect);
-  }
+  populateScenarioSelect();
 });
 
+function populateScenarioSelect() {
+  const select = document.getElementById("scenarioSelect");
+  if (!select) return;
+
+  // Limpa opções existentes
+  select.innerHTML = '';
+
+  // Adiciona todas as opções de cenário
+  Object.keys(SCENARIO_DESCRIPTIONS).forEach(key => {
+    const option = document.createElement("option");
+    option.value = key;
+    
+    // Formata o nome para exibição (remove underscores e capitaliza)
+    const displayName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    option.textContent = displayName;
+    
+    select.appendChild(option);
+  });
+
+  // Adiciona event listener
+  select.addEventListener("change", updateScenarioFromSelect);
+}
+
 // ======================
-// CARREGAR GEOJSON UMA VEZ
+// FUNÇÃO UTILITÁRIA: PADRONIZAR CÓDIGO
+// ======================
+function getCod6(rawValue) {
+    if (!rawValue) return null;
+    let str = String(rawValue).trim();
+    
+    // 1. Remove tudo que não é número
+    str = str.replace(/\D/g, "");
+    
+    // 2. Se for código estranho com zero na frente (ex: "0110001"), remove o zero via Int
+    let num = parseInt(str, 10);
+    str = String(num);
+
+    // 3. Garante minimo de 6 digitos com zeros a esquerda se necessario
+    str = str.padStart(6, "0");
+
+    // 4. Pega APENAS os 6 PRIMEIROS dígitos (padrão IBGE curto)
+    return str.slice(0, 6);
+}
+
+// ======================
+// 1. CARREGAR GEOJSON
 // ======================
 
 async function initScenarioMap() {
   try {
     const res = await fetch(GEOJSON_URL);
     if (!res.ok) {
-      console.error("Erro ao carregar GeoJSON:", res.status, res.statusText);
+      console.error("Erro GeoJSON:", res.status);
       return;
     }
     baseGeoJSONData = await res.json();
 
-    // Cria o mapa SEM mapa de fundo (sem tileLayer)
-    mapScenario = L.map("scenario-map", {
+    // CORREÇÃO: Usa o ID correto do mapa - "map" em vez de "scenario-map"
+    mapScenario = L.map("map", {
       zoomControl: true,
       attributionControl: false
     });
 
-    // Ajusta o mapa para enquadrar o Brasil
     const tmpLayer = L.geoJSON(baseGeoJSONData);
     mapScenario.fitBounds(tmpLayer.getBounds());
 
-    // Desenha o primeiro cenário (selecionado no <select>)
     updateScenarioFromSelect();
   } catch (err) {
-    console.error("Falha ao inicializar mapa de cenário:", err);
+    console.error("Erro init:", err);
+    console.log("Scenario changed to:", scenId);
+    console.log("Current selection:", currentSelection);
+    console.log("Risk for selection:", riskLookup[currentSelection.cod6]);
   }
 }
 
 // ======================
-// CARREGAR CSV DE UM CENÁRIO
+// 2. CARREGAR CSV
 // ======================
 
 async function loadScenarioCSV(scenId) {
   const csvPath = `${SCENARIOS_BASE_PATH}/${scenId}.csv`;
-  console.log("Carregando CSV do cenário:", csvPath);
 
-  const res = await fetch(csvPath);
-  if (!res.ok) {
-    console.error("Erro ao carregar CSV do cenário:", res.status, res.statusText);
-    riskLookup = {};
-    return;
-  }
-
-  const text = await res.text();
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) {
-    console.warn("CSV vazio ou sem linhas de dados.");
-    riskLookup = {};
-    return;
-  }
-
-  const header = lines[0].split(",");
-  // coluna de código
-  let idxCod = header.indexOf("cod_mun");
-  if (idxCod === -1) {
-    idxCod = header.indexOf("CD_MUN");
-  }
-  // coluna de risco
-  let idxRisk = header.indexOf("risk_prob");
-  if (idxRisk === -1) {
-    idxRisk = header.indexOf("risk");
-    if (idxRisk === -1 && header.length > 1) {
-      idxRisk = 1;
-    }
-  }
-
-  if (idxCod === -1 || idxRisk === -1) {
-    console.error(
-      "CSV não tem colunas esperadas (cod_mun / risk_prob). Cabeçalho encontrado:",
-      header
-    );
-    riskLookup = {};
-    return;
-  }
-
-  const tmpLookup = {};
-
-  for (let i = 1; i < lines.length; i++) {
-    const row = lines[i].split(",");
-    if (row.length <= Math.max(idxCod, idxRisk)) continue;
-
-    let codRaw = row[idxCod].trim();
-    let risk = parseFloat(row[idxRisk]);
-    if (!codRaw || isNaN(risk)) continue;
-
-    // >>> CSV: temos 7 dígitos (ex: "0110001"), mas o que importa são os 6 últimos ("110001")
-    codRaw = codRaw.replace(/\D/g, ""); // só dígitos
-    let cod6;
-    if (codRaw.length >= 6) {
-      cod6 = codRaw.slice(-6); // 6 últimos dígitos
-    } else {
-      cod6 = codRaw.padStart(6, "0");
+  try {
+    const res = await fetch(csvPath);
+    if (!res.ok) throw new Error("404 CSV");
+    const text = await res.text();
+    
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) {
+        riskLookup = {}; 
+        return;
     }
 
-    tmpLookup[cod6] = risk;
-  }
+    const header = lines[0].split(",");
+    
+    // Achar colunas
+    let idxCod = header.indexOf("cod_mun");
+    if (idxCod === -1) idxCod = header.indexOf("CD_MUN");
+    
+    let idxRisk = header.indexOf("risk_prob");
+    if (idxRisk === -1) idxRisk = header.indexOf("risk");
+    if (idxRisk === -1 && header.length > 1) idxRisk = 1;
 
-  riskLookup = tmpLookup;
-  console.log(
-    "Risks carregados para cenário",
-    scenId,
-    "(",
-    Object.keys(riskLookup).length,
-    "municípios )"
-  );
+    if (idxCod === -1 || idxRisk === -1) {
+      riskLookup = {};
+      return;
+    }
+
+    const tmpLookup = {};
+    for (let i = 1; i < lines.length; i++) {
+      const row = lines[i].split(",");
+      if (row.length <= Math.max(idxCod, idxRisk)) continue;
+
+      let codRaw = row[idxCod];
+      let risk = parseFloat(row[idxRisk]);
+      
+      if (!codRaw || isNaN(risk)) continue;
+
+      let cod6 = getCod6(codRaw);
+      
+      if (cod6) {
+          tmpLookup[cod6] = risk;
+      }
+    }
+    riskLookup = tmpLookup;
+
+  } catch (err) {
+    console.error("Erro CSV:", err);
+    riskLookup = {};
+  }
 }
 
 // ======================
-// ATUALIZAR CENÁRIO SELECIONADO
+// 3. ATUALIZAR CENÁRIO (Lógica Principal) - CORRIGIDO
 // ======================
 
 async function updateScenarioFromSelect() {
   if (!baseGeoJSONData || !mapScenario) return;
 
-  const select = document.getElementById("scenario-select");
+  const select = document.getElementById("scenarioSelect");
   const scenId = select ? select.value : "A_climate_only";
 
-  // Atualiza texto de descrição do cenário
-  const descElem = document.getElementById("scenario-description");
-  if (descElem) {
-    descElem.textContent = SCENARIO_DESCRIPTIONS[scenId] || "";
-  }
+  // Atualiza descrição
+  const descElem = document.getElementById("scenarioDescription");
+  if (descElem) descElem.textContent = SCENARIO_DESCRIPTIONS[scenId] || "";
 
-  // Carrega CSV e monta lookup de risco
+  // Carrega dados do cenário
   await loadScenarioCSV(scenId);
 
-  // Remove camada anterior se existir
+  // Remove camada antiga
   if (scenarioLayer) {
     mapScenario.removeLayer(scenarioLayer);
+    scenarioLayer = null;
+    currentSelectedLayer = null;
   }
 
-  // Cria nova camada com estilo baseado em riskLookup
+  // Cria nova camada
   scenarioLayer = L.geoJSON(baseGeoJSONData, {
     style: styleFeatureByRisk,
     onEachFeature: onEachFeatureScenario
   }).addTo(mapScenario);
 
-  // Garante que o mapa esteja enquadrado
-  if (scenarioLayer.getBounds().isValid()) {
-    mapScenario.fitBounds(scenarioLayer.getBounds());
+  // ATUALIZAÇÃO CRÍTICA: Se há seleção anterior, atualiza a exibição
+  if (currentSelection.cod6) {
+    updateDisplayForSelectedMunicipality();
+    
+    // Encontra e seleciona o layer correspondente na NOVA camada
+    setTimeout(() => {
+        findAndSelectCurrentMunicipality();
+    }, 200);
   }
 }
 
 // ======================
-// ESTILO DAS FEATURES
+// NOVA FUNÇÃO: ENCONTRAR E SELECIONAR MUNICÍPIO ATUAL
+// ======================
+
+function findAndSelectCurrentMunicipality() {
+  if (!scenarioLayer || !currentSelection.cod6) return;
+  
+  let foundLayer = null;
+  
+  scenarioLayer.eachLayer((layer) => {
+    if (foundLayer) return;
+    
+    const props = layer.feature.properties;
+    const rawProp = props.CD_MUN_STR || props.CD_MUN || props.cod_mun || "";
+    const layerCod6 = getCod6(rawProp);
+    
+    if (layerCod6 === currentSelection.cod6) {
+      foundLayer = layer;
+      currentSelectedLayer = layer;
+      
+      // Atualiza o popup com os novos dados
+      const newRisk = riskLookup[currentSelection.cod6];
+      const riskText = newRisk == null ? "No data" : newRisk.toFixed(3);
+      
+      // Fecha qualquer popup existente
+      mapScenario.closePopup();
+      
+      // Abre novo popup
+      setTimeout(() => {
+        layer.bindPopup(`${currentSelection.name}<br>Predicted risk: ${riskText}`).openPopup();
+      }, 100);
+    }
+  });
+}
+
+// ======================
+// 4. ATUALIZAR DISPLAY DA SELEÇÃO
+// ======================
+
+function updateDisplayForSelectedMunicipality() {
+  // CORREÇÃO: Usa os IDs corretos do HTML
+  const nameElem = document.getElementById("infoName");
+  const codeElem = document.getElementById("infoCode");
+  const riskElem = document.getElementById("infoRisk");
+  
+  if (!nameElem || !codeElem || !riskElem) {
+    console.error("Elementos não encontrados - verifique os IDs no HTML");
+    return;
+  }
+  
+  // Busca o risco ATUAL no lookup do cenário atual
+  const risk = riskLookup[currentSelection.cod6];
+  const riskText = risk == null ? "No data" : risk.toFixed(3);
+  
+  nameElem.textContent = currentSelection.name || "-";
+  codeElem.textContent = currentSelection.cod6 || "-";
+  riskElem.textContent = riskText;
+}
+
+// ======================
+// 5. ESTILO E CORES
 // ======================
 
 function styleFeatureByRisk(feature) {
   const props = feature.properties || {};
-  let cod7 = null;
-
-  if (props.CD_MUN_STR) {
-    cod7 = String(props.CD_MUN_STR);
-  } else if (props.CD_MUN) {
-    cod7 = String(props.CD_MUN);
-  } else if (props.cod_mun) {
-    cod7 = String(props.cod_mun);
-  }
-
-  let cod6 = null;
-  if (cod7) {
-    const raw = cod7.replace(/\D/g, "");
-    
-    cod6 = raw.slice(0, 6);
-  }
+  const rawProp = props.CD_MUN_STR || props.CD_MUN || props.cod_mun || "";
+  const cod6 = getCod6(rawProp);
 
   const risk = cod6 ? riskLookup[cod6] : null;
-
   const fillColor = risk == null ? "#f0f0f0" : riskColorScale(risk);
 
   return {
@@ -228,7 +301,6 @@ function styleFeatureByRisk(feature) {
   };
 }
 
-// Escala simples de cor para risco (vermelho em gradiente)
 function riskColorScale(risk) {
   if (risk >= 0.25) return "#800026";
   if (risk >= 0.15) return "#BD0026";
@@ -240,43 +312,54 @@ function riskColorScale(risk) {
 }
 
 // ======================
-// INTERAÇÃO: CLIQUE NO MUNICÍPIO
+// 6. EVENTO DE CLIQUE - CORRIGIDO
 // ======================
 
 function onEachFeatureScenario(feature, layer) {
-  const props = feature.properties || {};
-  const name = props.NM_MUN || "Unknown";
+  layer.on("click", (e) => {
+    const props = feature.properties || {};
+    const name = props.NM_MUN || "Unknown";
+    const rawProp = props.CD_MUN_STR || props.CD_MUN || props.cod_mun || "";
+    const cod6 = getCod6(rawProp);
 
-  let cod7 = null;
-  if (props.CD_MUN_STR) {
-    cod7 = String(props.CD_MUN_STR);
-  } else if (props.CD_MUN) {
-    cod7 = String(props.CD_MUN);
-  } else if (props.cod_mun) {
-    cod7 = String(props.cod_mun);
-  }
+    // ATUALIZA SELEÇÃO ATUAL
+    currentSelection = {
+      cod6: cod6,
+      name: name,
+      cod7: rawProp
+    };
 
-  let cod6 = null;
-  if (cod7) {
-    const raw = cod7.replace(/\D/g, "");
-    cod6 = raw.slice(0, 6);
-  }
+    // ATUALIZA REFERÊNCIA DIRETA AO LAYER
+    currentSelectedLayer = layer;
 
-  const risk = cod6 ? riskLookup[cod6] : null;
+    // ATUALIZA DISPLAY IMEDIATAMENTE
+    updateDisplayForSelectedMunicipality();
 
-  const nameElem = document.getElementById("municipality-name");
-  const riskElem = document.getElementById("risk-value");
+    // ABRE POPUP
+    const risk = riskLookup[cod6];
+    const riskText = risk == null ? "No data" : risk.toFixed(3);
+    
+    // Fecha popup anterior se existir
+    mapScenario.closePopup();
+    
+    // Abre novo popup
+    layer.bindPopup(`${name}<br>Predicted risk: ${riskText}`).openPopup();
+    
+    // Para propagação do evento
+    e.originalEvent.stopPropagation();
+  });
+}
 
-  if (nameElem) nameElem.textContent = name;
-  if (riskElem) {
-    riskElem.textContent = risk == null ? "No data" : risk.toFixed(3);
-  }
+// ======================
+// 7. FUNÇÃO DE DEBUG (opcional)
+// ======================
 
-  if (risk == null) {
-    layer.bindPopup(`${name}<br><em>No data</em>`).openPopup();
-  } else {
-    layer
-      .bindPopup(`${name}<br>Predicted risk: ${risk.toFixed(3)}`)
-      .openPopup();
-  }
+function debugSelection() {
+  console.log("=== DEBUG SELECTION ===");
+  console.log("Current Selection:", currentSelection);
+  console.log("Current Risk Lookup has key?", riskLookup[currentSelection.cod6]);
+  console.log("Scenario Layer exists?", !!scenarioLayer);
+  console.log("Current Selected Layer:", currentSelectedLayer);
+  
+  
 }
