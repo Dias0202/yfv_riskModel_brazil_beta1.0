@@ -12,12 +12,11 @@ const ALL_VARIABLES = [
   "Forest_formation-mean_normalized",
   "Pasture-mean_normalized",
   "Urban_area-mean_normalized",
-  "Bio1-mean_z",
-  "Bio12-mean_z",
+  "tmax_mean",   // Alterado de Bio1-mean_z
+  "ppt_mean",    // Alterado de Bio12-mean_z
   "pop_density_last",
   "forest_loss_rate_proxy"
 ];
-
 // Descrições das variáveis
 const VARIABLE_DESCRIPTIONS = {
   yfv_ocorreu:
@@ -461,5 +460,6 @@ function debugData(codMun) {
     });
   }
 }
+
 
 window.debugData = debugData;
