@@ -12,10 +12,9 @@ const ALL_VARIABLES = [
   "Forest_formation-mean_normalized",
   "Pasture-mean_normalized",
   "Urban_area-mean_normalized",
-  "tmax_mean",   // Alterado de Bio1-mean_z
-  "ppt_mean",    // Alterado de Bio12-mean_z
-  "pop_density_last",
-  "forest_loss_rate_proxy"
+  "tmax_mean",   
+  "ppt_mean",    
+  "pop_density_last"
 ];
 // Descrições das variáveis
 const VARIABLE_DESCRIPTIONS = {
@@ -473,4 +472,5 @@ function debugData(codMun) {
 
 
 window.debugData = debugData;
+
 
