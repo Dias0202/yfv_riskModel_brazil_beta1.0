@@ -34,8 +34,8 @@ const VARIABLE_DESCRIPTIONS = {
   "ppt_mean":
     "Average Precipitation (mm). Simulates rainfall patterns.",
   // FIM NOVAS DESCRIÇÕES
-  pop_density_last:
-    "Population density (people per km²).",
+  "pop_ibge_cluster":
+    "Estimated absolute population count (IBGE) for the municipality in the selected period.",
   forest_loss_rate_proxy:
     "Proxy for forest loss rate."
 };
@@ -472,5 +472,6 @@ function debugData(codMun) {
 
 
 window.debugData = debugData;
+
 
 
