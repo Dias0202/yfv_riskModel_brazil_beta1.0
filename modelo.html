@@ -129,6 +129,15 @@
       text-align: left;
       padding: 0 0.5rem;
     }
+    
+    /* Controle de tamanho para as imagens centrais */
+    .figure-central-img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+        display: block;
+        margin: 0 auto;
+    }
 
     /* Tabela Técnica */
     .tech-table {
@@ -261,8 +270,8 @@
 
       <div class="figure-container">
         <h3>Decision Strategy: The Confusion Matrix</h3>
-        <div style="max-width: 600px; margin: 0 auto;">
-          <img src="img/confusion_matrix.png" alt="Confusion Matrix">
+        <div style="max-width: 450px; margin: 0 auto;">
+          <img src="img/confusion_matrix.png" alt="Confusion Matrix" class="figure-central-img">
         </div>
         <div class="figure-caption" style="max-width: 800px; margin: 1rem auto; text-align: justify;">
           <strong>Figure 3: Confusion Matrix (Test Set).</strong>
@@ -278,8 +287,8 @@
       </p>
 
       <div class="figure-container">
-        <div style="max-width: 800px; margin: 0 auto;">
-          <img src="img/feature_importance.png" alt="Feature Importance Plot">
+        <div style="max-width: 600px; margin: 0 auto;">
+          <img src="img/feature_importance.png" alt="Feature Importance Plot" class="figure-central-img">
         </div>
         <div class="figure-caption" style="max-width: 800px; margin: 1rem auto;">
           <strong>Figure 4: Top 15 Predictors of Yellow Fever Risk.</strong>
