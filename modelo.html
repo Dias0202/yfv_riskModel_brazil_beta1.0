@@ -9,31 +9,73 @@
   
   <style>
     .model-container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 2rem 1rem;
+      padding: 2rem 1.5rem;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #333;
     }
 
+    /* Estilo dos Blocos de Seção */
+    .section-block {
+      background: #fff;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    h2 {
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 12px;
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: #2c3e50;
+      font-size: 1.8rem;
+    }
+
+    h3 {
+      color: #444;
+      margin-top: 1.5rem;
+      font-size: 1.3rem;
+      border-left: 4px solid #007bff;
+      padding-left: 10px;
+    }
+
+    p, li {
+      line-height: 1.7;
+      font-size: 1rem;
+      color: #4a4a4a;
+    }
+
+    /* Grid de Métricas (Cards) */
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
     .metric-card {
-      background: #fff;
+      background: #f8f9fa;
       padding: 1.5rem;
       border-radius: 8px;
-      border: 1px solid #e0e0e0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #dee2e6;
       text-align: center;
+      transition: transform 0.2s;
     }
 
-    .metric-card h3 {
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+      border-color: #007bff;
+    }
+
+    .metric-card h4 {
       margin: 0;
       color: #666;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -41,9 +83,9 @@
     .metric-card .value {
       display: block;
       margin-top: 0.5rem;
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 700;
-      color: #222;
+      color: #2c3e50;
     }
 
     .metric-card .desc {
@@ -53,42 +95,64 @@
       color: #888;
     }
 
-    .styled-table {
+    /* Layout de Imagens e Figuras */
+    .figure-container {
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .figure-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+
+    .figure-item {
+      background: #fafafa;
+      padding: 1rem;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+
+    .figure-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .figure-caption {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: left;
+      padding: 0 0.5rem;
+    }
+
+    /* Tabela Técnica */
+    .tech-table {
       width: 100%;
       border-collapse: collapse;
       margin: 1.5rem 0;
       font-size: 0.95rem;
-      background-color: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      border-radius: 8px;
-      overflow: hidden;
     }
-
-    .styled-table thead tr {
-      background-color: #007bff;
-      color: #ffffff;
+    .tech-table th, .tech-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e0e0e0;
       text-align: left;
     }
-
-    .styled-table th,
-    .styled-table td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #dddddd;
+    .tech-table thead th {
+      background-color: #f1f3f5;
+      color: #333;
+      font-weight: 600;
     }
 
-    .styled-table tbody tr:last-of-type td {
-      border-bottom: 2px solid #009879;
+    @media (max-width: 768px) {
+      .figure-row {
+        grid-template-columns: 1fr;
+      }
     }
-    
-    .section-block {
-      background: #fff;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      border-radius: 8px;
-      border: 1px solid #eee;
-    }
-
-    h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -106,109 +170,177 @@
   <main class="model-container">
     
     <section class="section-block">
-      <h2>Model Performance</h2>
+      <h2>Experimental Design & Model Selection</h2>
       <p>
-        We evaluated multiple machine learning algorithms (Logistic Regression, Random Forest, Gradient Boosting, XGBoost). 
-        The final model was selected based on the best balance between Sensitivity (Recall) and Precision, optimized using the <strong>F2-Score</strong>.
-      </p>
-
-      <div class="metric-grid">
-        <div class="metric-card">
-          <h3>ROC-AUC</h3>
-          <span class="value">0.82+</span>
-          <span class="desc">Area Under Curve (Validation)</span>
-        </div>
-        <div class="metric-card">
-          <h3>F2-Score</h3>
-          <span class="value">Optimized</span>
-          <span class="desc">Prioritizes Recall over Precision</span>
-        </div>
-        <div class="metric-card">
-          <h3>Threshold</h3>
-          <span class="value">Dynamic</span>
-          <span class="desc">Adjusted to minimize missed outbreaks</span>
-        </div>
-      </div>
-
-      <p style="font-size: 0.9rem; color: #555;">
-        <em>*Note: The F2-Score was chosen as the optimization metric because, in epidemiological surveillance, false negatives (missing an outbreak) are significantly more costly than false positives (false alarms).</em>
-      </p>
-    </section>
-
-    <section class="section-block">
-      <h2>Methodology Pipeline</h2>
-      
-      <h3>1. Data Integration</h3>
-      <p>The model integrates data from multiple sources to characterize the transmission niche:</p>
-      <ul>
-        <li><strong>Environmental:</strong> Land use (Forest, Pasture, Urban) from MapBiomas; Climate (Temperature, Precipitation) from WorldClim.</li>
-        <li><strong>Demographic:</strong> Absolute Population (IBGE) and Density.</li>
-        <li><strong>Immunological:</strong> Vaccination coverage (PNI/DATASUS) and estimated population at risk.</li>
-      </ul>
-
-      <h3>2. Feature Engineering & Pre-processing</h3>
-      <ul>
-        <li>Normalization of continuous variables (StandardScaler).</li>
-        <li>One-Hot Encoding for categorical regions/clusters.</li>
-        <li>Imputation of missing values (Median strategy).</li>
-        <li>Generation of "Forest Loss Proxy" and "Unvaccinated Risk" indices.</li>
-      </ul>
-
-      <h3>3. Future Scenarios (2021–2040)</h3>
-      <p>
-        Future risk is estimated by applying mathematical transformations to the baseline data, simulating different policy and environmental outcomes.
+        The objective of this study was to develop a predictive model for the occurrence of Sylvatic Yellow Fever (YF) outbreaks in Brazilian municipalities (2001–2020) and project risks for future scenarios (2021–2040).
+        This is a <strong>binary classification problem</strong> where the positive class (1) represents the occurrence of at least one confirmed YF case (human or epizootic) in a given municipality-period cluster.
       </p>
       
-      <table class="styled-table">
+      <h3>Algorithm Comparison</h3>
+      <p>
+        We evaluated four distinct algorithms using Stratified K-Fold Cross-Validation (k=5) to ensure robustness against spatial and temporal autocorrelation. The <strong>Random Forest Classifier</strong> was selected as the final model due to its superior capability in handling non-linear relationships between climatic variables and epidemiological outcomes, as well as its resistance to overfitting in high-dimensional feature spaces.
+      </p>
+      <table class="tech-table">
         <thead>
           <tr>
-            <th>Scenario</th>
-            <th>Description & Assumptions</th>
+            <th>Algorithm</th>
+            <th>ROC-AUC (Mean)</th>
+            <th>Key Advantage/Disadvantage</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>A - Climate Only (SSP2-4.5)</strong></td>
-            <td>Simulates climate change trends: <strong>Temp +1.5°C</strong>, <strong>Precipitation -5%</strong>, and VPD +5%. All other factors remain constant.</td>
+            <td><strong>Random Forest (Selected)</strong></td>
+            <td><strong>0.93</strong></td>
+            <td>High discriminative power; captures complex interactions (e.g., climate × vegetation).</td>
           </tr>
           <tr>
-            <td><strong>B - Vaccination Up</strong></td>
-            <td>Climate change (A) + <strong>20% increase</strong> in vaccination coverage (capped at 100%).</td>
+            <td>XGBoost</td>
+            <td>0.91</td>
+            <td>Competitive performance but required extensive hyperparameter tuning.</td>
           </tr>
           <tr>
-            <td><strong>C - Vaccination Down</strong></td>
-            <td>Climate change (A) + <strong>20% decrease</strong> in vaccination coverage.</td>
+            <td>Gradient Boosting</td>
+            <td>0.89</td>
+            <td>Slower training time; marginally lower sensitivity than RF.</td>
           </tr>
           <tr>
-            <td><strong>D - Population Growth</strong></td>
-            <td>Climate change (A) + <strong>15% increase</strong> in absolute population.</td>
-          </tr>
-          <tr>
-            <td><strong>F - Agro-Expansion</strong></td>
-            <td>Climate change (A) + Pasture (+20%), Urban (+10%), and Forest (-5%).</td>
-          </tr>
-          <tr>
-            <td><strong>G - Conservation</strong></td>
-            <td>Climate change (A) + Forest (+10%) and Pasture (-10%).</td>
+            <td>Logistic Regression</td>
+            <td>0.82</td>
+            <td>Good baseline but failed to capture non-linear climatic thresholds.</td>
           </tr>
         </tbody>
       </table>
     </section>
 
     <section class="section-block">
-      <h2>Feature Importance</h2>
+      <h2>Model Performance & Validation</h2>
       <p>
-        The model identified the following drivers as the most influential in predicting Yellow Fever occurrence (based on tree-based feature importance):
+        Given the epidemiological context, where <strong>False Negatives (missing an outbreak)</strong> have severe public health consequences (loss of life), we optimized the model decision threshold using the <strong>F2-Score</strong>. This metric weighs Recall (Sensitivity) higher than Precision.
       </p>
-      <ul>
-        <li><strong>Demography:</strong> Population size and density are critical scaling factors for transmission risk.</li>
-        <li><strong>Vaccination:</strong> Low coverage areas (high percentage of unvaccinated individuals) are strong predictors of outbreaks.</li>
-        <li><strong>Climate:</strong> Maximum temperature and precipitation seasonality define the mosquito vector suitability.</li>
-        <li><strong>Land Use:</strong> Proximity to forest edges and fragmented landscapes (Forest/Pasture interface) increases sylvatic spillover risk.</li>
-      </ul>
-      <div style="background: #f9f9f9; border: 2px dashed #ccc; padding: 2rem; text-align: center; border-radius: 8px; margin-top: 1rem;">
-        <p style="color: #888;">[Feature Importance Plot generated by Python can be inserted here]</p>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <h4>ROC-AUC</h4>
+          <span class="value">0.93</span>
+          <span class="desc">Outstanding discrimination</span>
+        </div>
+        <div class="metric-card">
+          <h4>Recall (Sensitivity)</h4>
+          <span class="value">~72%</span>
+          <span class="desc">Outbreaks correctly detected</span>
+        </div>
+        <div class="metric-card">
+          <h4>F2-Score</h4>
+          <span class="value">Optimized</span>
+          <span class="desc">Prioritizing safety over precision</span>
+        </div>
+        <div class="metric-card">
+          <h4>Threshold</h4>
+          <span class="value">0.16</span>
+          <span class="desc">Low barrier for risk alert</span>
+        </div>
       </div>
+
+      <div class="figure-row">
+        <div class="figure-item">
+          <img src="img/roc_curve.png" alt="ROC Curve">
+          <div class="figure-caption">
+            <strong>Figure 1: Receiver Operating Characteristic (ROC) Curve.</strong>
+            The AUC of 0.93 indicates that the model has a 93% probability of ranking a municipality with a YF outbreak higher than one without. The curve hugs the top-left corner, demonstrating high sensitivity while maintaining specificity.
+          </div>
+        </div>
+        <div class="figure-item">
+          <img src="img/pr_curve.png" alt="Precision-Recall Curve">
+          <div class="figure-caption">
+            <strong>Figure 2: Precision-Recall (PR) Curve.</strong>
+            With an Average Precision (AP) of 0.53, the model faces the challenge of class imbalance (outbreaks are rare events). The curve shows the trade-off: to achieve high recall (>0.7), precision drops, reflecting the conservative nature of the model.
+          </div>
+        </div>
+      </div>
+
+      <div class="figure-container">
+        <h3>Decision Strategy: The Confusion Matrix</h3>
+        <div style="max-width: 600px; margin: 0 auto;">
+          <img src="img/confusion_matrix.png" alt="Confusion Matrix">
+        </div>
+        <div class="figure-caption" style="max-width: 800px; margin: 1rem auto; text-align: justify;">
+          <strong>Figure 3: Confusion Matrix (Test Set).</strong>
+          By setting a low probability threshold (0.16), the model correctly identified <strong>166 outbreaks (True Positives)</strong> while missing only 64. This results in 333 <strong>False Positives</strong> (municipalities flagged as risky where no outbreak occurred). In public health terms, these False Positives represent "preventive alerts"—areas that are environmentally suitable for YF and should be prioritized for vaccination, even if no case has been reported yet.
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <h2>Ecological Drivers of Risk</h2>
+      <p>
+        The feature importance analysis (Gini impurity reduction) reveals the biological and demographic mechanisms driving the model's predictions.
+      </p>
+
+      <div class="figure-container">
+        <div style="max-width: 800px; margin: 0 auto;">
+          <img src="img/feature_importance.png" alt="Feature Importance Plot">
+        </div>
+        <div class="figure-caption" style="max-width: 800px; margin: 1rem auto;">
+          <strong>Figure 4: Top 15 Predictors of Yellow Fever Risk.</strong>
+        </div>
+      </div>
+
+      <h3>Interpretation of Key Predictors</h3>
+      <ul style="list-style-type: disc; padding-left: 20px;">
+        <li><strong>Temporal Dynamics (cluster_C4_2015_2019):</strong> The strongest predictor, capturing the massive silvatic expansion wave that occurred in Southeast Brazil during this period.</li>
+        <li><strong>Precipitation (ppt_mean) & Temperature (tmax_mean):</strong> These are critical abiotic factors for the vector lifecycle (<em>Haemagogus</em> and <em>Sabethes</em> mosquitoes). Rainfall enables breeding sites, while temperature accelerates viral replication within the mosquito (extrinsic incubation period).</li>
+        <li><strong>Immunological Landscape (not_vaccinated_pct):</strong> Areas with large pockets of unvaccinated populations act as fuel for viral amplification. The model correctly identifies that low vaccination coverage is a critical vulnerability.</li>
+        <li><strong>Population Density & Urban Interface:</strong> Variables like <code>pop_density_last</code> and <code>Urban_area</code> highlight the risk at the peri-urban interface, where humans come into contact with the silvatic cycle.</li>
+      </ul>
+    </section>
+
+    <section class="section-block">
+      <h2>Future Scenarios Methodology (2021–2040)</h2>
+      <p>
+        To project risk into the future, we developed a simulation framework based on the <strong>SSP2-4.5</strong> climate change pathway (IPCC AR6). Since future biological data is unavailable, we applied mathematical transformations to the baseline features to create synthetic future states.
+      </p>
+
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Variable Group</th>
+            <th>Simulation Logic (SSP2-4.5 Proxy)</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Temperature</strong></td>
+            <td><code>tmax_mean + 1.5°C</code></td>
+            <td>Consistent with near-term warming projections for Brazil under intermediate emissions.</td>
+          </tr>
+          <tr>
+            <td><strong>Precipitation</strong></td>
+            <td><code>ppt_mean × 0.95</code> (-5%)</td>
+            <td>Simulates the trend of reduced rainfall and increased drought frequency in tropical areas.</td>
+          </tr>
+          <tr>
+            <td><strong>Vapor Pressure (VPD)</strong></td>
+            <td><code>vpd_mean × 1.05</code> (+5%)</td>
+            <td>Drier air increases water stress, affecting vector survival and forest health.</td>
+          </tr>
+          <tr>
+            <td><strong>Demography</strong></td>
+            <td><code>pop_absolute × 1.15</code> (Scenario D)</td>
+            <td>Projected population growth, increasing the number of people exposed to the silvatic cycle.</td>
+          </tr>
+          <tr>
+            <td><strong>Vaccination</strong></td>
+            <td>Dynamic (±20%)</td>
+            <td>Scenarios B and C simulate the success or failure of public health campaigns (PNI).</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p style="font-size: 0.9rem; margin-top: 1rem; padding: 1rem; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 4px; color: #856404;">
+        <strong>Note:</strong> These scenarios are <em>simulations of sensitivity</em>. They answer "What if?" questions (e.g., "What if vaccination drops 20% while the climate warms?") rather than providing deterministic forecasts.
+      </p>
     </section>
 
   </main>
