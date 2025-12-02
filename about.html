@@ -9,7 +9,7 @@
   
   <style>
     .doc-container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
       font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -18,7 +18,7 @@
 
     .section-block {
       background: #fff;
-      padding: 2.5rem;
+      padding: 2rem;
       margin-bottom: 2.5rem;
       border-radius: 8px;
       border: 1px solid #e0e0e0;
@@ -36,55 +36,69 @@
     h3 {
       color: #444;
       margin-top: 2rem;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       border-left: 4px solid #007bff;
       padding-left: 10px;
     }
 
-    p, li {
-      line-height: 1.7;
-      color: #4a4a4a;
-    }
+    p { line-height: 1.6; color: #555; }
+    
+    li { line-height: 1.6; color: #555; margin-bottom: 0.5rem; }
 
-    /* Tabela de Dados */
-    .data-table {
+    /* Estilos da Tabela de Variáveis */
+    .vars-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 1.5rem 0;
+      margin-top: 1rem;
       font-size: 0.9rem;
-    }
-    .data-table th, .data-table td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #e0e0e0;
-      text-align: left;
-    }
-    .data-table thead th {
-      background-color: #f8f9fa;
-      color: #333;
-      font-weight: 700;
-      border-bottom: 2px solid #dee2e6;
-    }
-    .data-table tbody tr:hover {
-      background-color: #f1f3f5;
+      background: #fff;
     }
 
-    .source-badge {
-      display: inline-block;
-      background: #e9ecef;
-      color: #495057;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-left: 8px;
+    .vars-table th, .vars-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+      text-align: left;
     }
-    
+
+    .vars-table thead th {
+      background-color: #f8f9fa;
+      color: #444;
+      font-weight: 700;
+      border-bottom: 2px solid #ddd;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+
+    .vars-table tbody tr:hover {
+      background-color: #fcfcfc;
+    }
+
+    /* Tag de Fonte */
+    .source-tag {
+      display: inline-block;
+      background: #eef2f5;
+      color: #4a5568;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      border: 1px solid #dee2e6;
+    }
+
     .ref-link {
         color: #007bff;
         text-decoration: none;
     }
     .ref-link:hover {
         text-decoration: underline;
+    }
+
+    code {
+      font-family: Consolas, monospace;
+      background: #f4f4f4;
+      padding: 1px 4px;
+      border-radius: 3px;
     }
   </style>
 </head>
@@ -103,9 +117,12 @@
   <main class="doc-container">
 
     <section class="section-block">
-      <h2>Data Sources & Acquisition</h2>
+      <h2>Data Sources & Methodology</h2>
       <p>
-        The dataset integrates epidemiological, environmental, and demographic variables at the municipality level across Brazil. Data was aggregated into 5-year clusters (2001–2020) to capture temporal trends.
+        The dataset integrates epidemiological, environmental, and demographic variables at the municipality level across Brazil. 
+        Data was aggregated into 5-year temporal clusters (1994–2025) to capture trends and reduce noise from reporting delays.
+        All environmental variables were normalized or aggregated (mean/sum) to the municipal boundary using the 
+        <strong>BR_Municipios_2022</strong> shapefile provided by IBGE.
       </p>
 
       <h3>1. Epidemiological Data</h3>
@@ -114,32 +131,31 @@
       </p>
       <ul>
         <li><strong>Source:</strong> Ministry of Health / SINAN (Sistema de Informação de Agravos de Notificação).</li>
-        <li><strong>Reference:</strong> <a href="#" class="ref-link">[INSERT LINK TO DATASUS/SINAN]</a></li>
-        <li><strong>Processing:</strong> Data cleaned to remove inconsistencies; aggregated by municipality and cluster period.</li>
+        <li><strong>Data Provider:</strong> CGARB / DEDT / SVS.</li>
+        <li><strong>Link:</strong> <a href="https://datasus.saude.gov.br/" class="ref-link" target="_blank">DATASUS Official Portal</a></li>
       </ul>
 
       <h3>2. Environmental Predictors</h3>
       <p>
-        <strong>Climatic Variables:</strong> Monthly averages for Maximum Temperature, Minimum Temperature, Precipitation, and Vapor Pressure Deficit (VPD).
+        <strong>Climatic Variables:</strong> Monthly averages for Maximum Temperature, Minimum Temperature, Precipitation, Vapor Pressure Deficit (VPD) and Wind Speed.
       </p>
       <ul>
-        <li><strong>Source:</strong> WorldClim v2.1 (Historical) / Mathematical Simulation based on MIROC6 SSP2-4.5 (Future).</li>
-        <li><strong>Reference:</strong> <a href="#" class="ref-link">[INSERT LINK TO WORLDCLIM]</a></li>
-        <li><strong>Resolution:</strong> ~1km spatial resolution, aggregated to municipality mean.</li>
+        <li><strong>Source:</strong> TerraClimate (Historical) / Mathematical Simulation based on MIROC6 SSP2-4.5 (Future).</li>
+        <li><strong>Link:</strong> <a href="https://www.climatologylab.org/terraclimate.html" class="ref-link" target="_blank">TerraClimate Dataset</a></li>
+        <li><strong>Resolution:</strong> ~4km spatial resolution, aggregated to municipality mean.</li>
       </ul>
 
       <p>
-        <strong>Land Use & Cover:</strong> Percentage of municipality area covered by Forest, Pasture, and Urban infrastructure.
+        <strong>Land Use & Cover:</strong> Normalized indices of municipality area covered by Forest, Pasture, Urban infrastructure, and Wetlands.
       </p>
       <ul>
-        <li><strong>Source:</strong> MapBiomas Collection [INSERT VERSION, e.g., 6.0 or 7.0].</li>
-        <li><strong>Reference:</strong> <a href="#" class="ref-link">[INSERT LINK TO MAPBIOMAS]</a></li>
-        <li><strong>Processing:</strong> Normalized area calculation (km²) relative to total municipality size.</li>
+        <li><strong>Source:</strong> MapBiomas Collection (via Abdalla & Augusto, 2022 normalization).</li>
+        <li><strong>Link:</strong> <a href="https://mapbiomas.org/" class="ref-link" target="_blank">MapBiomas Project</a></li>
       </ul>
 
       <h3>3. Demographic & Vaccination Data</h3>
       <p>
-        <strong>Population:</strong> Absolute population counts and density.
+        <strong>Population:</strong> Absolute population counts and density provided by the Brazilian Institute of Geography and Statistics.
         <span class="source-badge">IBGE</span>
       </p>
       <p>
@@ -149,24 +165,27 @@
     </section>
 
     <section class="section-block">
-      <h2>Descriptive Statistics (Baseline Dataset)</h2>
+      <h2>Variable Dictionary & Descriptive Statistics</h2>
       <p>
-        Summary statistics of the main predictors used in the training phase (2001–2020).
+        Detailed description of all features used in the training and validation of the Random Forest model. 
+        Statistics refer to the baseline dataset (1994–2025).
       </p>
 
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Variable</th>
-            <th>Mean ± Std Dev</th>
-            <th>Min</th>
-            <th>Max</th>
-            <th>Unit</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
- <tr>
+      <div style="overflow-x: auto;">
+        <table class="vars-table">
+          <thead>
+            <tr>
+              <th style="width: 20%;">Variable Name</th>
+              <th style="width: 30%;">Description</th>
+              <th style="width: 10%;">Unit</th>
+              <th style="width: 15%;">Mean ± Std Dev</th>
+              <th style="width: 15%;">Range (Min–Max)</th>
+              <th style="width: 10%;">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
               <td>
                 <strong>YF Occurrence Event</strong><br>
                 <code style="font-size:0.75em; color:#666;">yfv_ocorreu</code>
@@ -175,7 +194,7 @@
               <td>Binary</td>
               <td>Freq: 4.12%</td>
               <td>0.00 – 1.00</td>
-              <td><span class="source-tag">Ministry of Health (SVS/DEDT/CGARB)</span></td>
+              <td><span class="source-tag">Ministry of Health</span></td>
             </tr>
 
             <tr>
@@ -247,7 +266,7 @@
               <td>°C</td>
               <td>28.16 ± 2.96</td>
               <td>18.32 – 35.09</td>
-              <td><span class="source-tag">TerraClimate (Abatzoglou et al., 2018)</span></td>
+              <td><span class="source-tag">TerraClimate</span></td>
             </tr>
 
             <tr>
@@ -259,7 +278,7 @@
               <td>°C</td>
               <td>17.26 ± 3.14</td>
               <td>8.73 – 24.61</td>
-              <td><span class="source-tag">TerraClimate (Abatzoglou et al., 2018)</span></td>
+              <td><span class="source-tag">TerraClimate</span></td>
             </tr>
 
             <tr>
@@ -271,7 +290,7 @@
               <td>mm</td>
               <td>112.21 ± 39.57</td>
               <td>22.03 – 321.45</td>
-              <td><span class="source-tag">TerraClimate (Abatzoglou et al., 2018)</span></td>
+              <td><span class="source-tag">TerraClimate</span></td>
             </tr>
 
             <tr>
@@ -283,7 +302,7 @@
               <td>kPa</td>
               <td>0.84 ± 0.27</td>
               <td>0.30 – 2.01</td>
-              <td><span class="source-tag">TerraClimate (Abatzoglou et al., 2018)</span></td>
+              <td><span class="source-tag">TerraClimate</span></td>
             </tr>
             
             <tr>
@@ -295,7 +314,7 @@
               <td>m/s</td>
               <td>1.93 ± 0.48</td>
               <td>0.66 – 4.50</td>
-              <td><span class="source-tag">TerraClimate (Abatzoglou et al., 2018)</span></td>
+              <td><span class="source-tag">TerraClimate</span></td>
             </tr>
 
             <tr>
@@ -307,7 +326,7 @@
               <td>Norm. Index</td>
               <td>0.00 ± 0.00</td>
               <td>0.00 – 0.05</td>
-              <td><span class="source-tag">Abdalla & Augusto (2022)</span></td>
+              <td><span class="source-tag">Abdalla & Augusto</span></td>
             </tr>
 
             <tr>
@@ -319,7 +338,7 @@
               <td>Norm. Index</td>
               <td>0.00 ± 0.00</td>
               <td>0.00 – 0.22</td>
-              <td><span class="source-tag">Abdalla & Augusto (2022)</span></td>
+              <td><span class="source-tag">Abdalla & Augusto</span></td>
             </tr>
 
             <tr>
@@ -331,7 +350,7 @@
               <td>Norm. Index</td>
               <td>0.00 ± 0.02</td>
               <td>0.00 – 1.00</td>
-              <td><span class="source-tag">Abdalla & Augusto (2022)</span></td>
+              <td><span class="source-tag">Abdalla & Augusto</span></td>
             </tr>
             
             <tr>
@@ -343,7 +362,7 @@
               <td>Norm. Index</td>
               <td>0.00 ± 0.00</td>
               <td>0.00 – 0.02</td>
-              <td><span class="source-tag">Abdalla & Augusto (2022)</span></td>
+              <td><span class="source-tag">Abdalla & Augusto</span></td>
             </tr>
 
             <tr>
@@ -355,7 +374,7 @@
               <td>Index / %</td>
               <td>1.24 ± 0.95</td>
               <td>0.00 – 4.14</td>
-              <td><span class="source-tag">Hansen et al. (2013)</span></td>
+              <td><span class="source-tag">Hansen et al.</span></td>
             </tr>
 
             <tr>
@@ -367,7 +386,7 @@
               <td>Year Index</td>
               <td>0.07 ± 0.07</td>
               <td>0.00 – 0.54</td>
-              <td><span class="source-tag">Hansen et al. (2013)</span></td>
+              <td><span class="source-tag">Hansen et al.</span></td>
             </tr>
             
              <tr>
@@ -391,10 +410,38 @@
               <td>Meters</td>
               <td>1,232 ± 5,766</td>
               <td>0.06 – 127,118</td>
-              <td><span class="source-tag">OpenStreetMap (Geofabrik)</span></td>
+              <td><span class="source-tag">OpenStreetMap</span></td>
             </tr>
+
           </tbody>
-      </table>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <h2>References & Citations</h2>
+      <ul style="list-style-type: disc; padding-left: 20px; color: #555; line-height: 1.8;">
+        <li>
+          <strong>Abdalla, F. & Augusto, R. (2022).</strong> 
+          <em>Normalized land-use dataset for Brazil.</em> Nature Scientific Data. 
+          DOI: <a href="https://doi.org/10.1038/s41597-022-01581-2" target="_blank" class="ref-link">10.1038/s41597-022-01581-2</a>.
+        </li>
+        <li>
+          <strong>Abatzoglou, J.T., et al. (2018).</strong> 
+          <em>TerraClimate, a high-resolution global dataset of monthly climate and climatic water balance from 1958-2015.</em> 
+          Scientific Data. DOI: <a href="https://doi.org/10.1038/sdata.2017.191" target="_blank" class="ref-link">10.1038/sdata.2017.191</a>.
+        </li>
+        <li>
+          <strong>Hansen, M. C., et al. (2013).</strong> 
+          <em>High-Resolution Global Maps of 21st-Century Forest Cover Change.</em> 
+          Science. DOI: <a href="https://doi.org/10.1126/science.1244693" target="_blank" class="ref-link">10.1126/science.1244693</a>.
+        </li>
+        <li>
+          <strong>OpenStreetMap Contributors.</strong> 
+          <em>Brazil Road Network Data.</em> 
+          Downloaded via Geofabrik. URL: <a href="https://download.geofabrik.de/south-america/brazil.html" target="_blank" class="ref-link">geofabrik.de</a>.
+        </li>
+      </ul>
     </section>
 
     <section class="section-block">
@@ -413,4 +460,3 @@
   </main>
 </body>
 </html>
-
