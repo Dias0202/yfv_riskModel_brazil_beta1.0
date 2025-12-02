@@ -4,7 +4,89 @@
   <meta charset="UTF-8" />
   <title>Yellow Fever – Data & Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <link rel="stylesheet" href="css/styles.css" />
+  
+  <style>
+    .doc-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #333;
+    }
+
+    .section-block {
+      background: #fff;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    h2 {
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 12px;
+      margin-top: 0;
+      color: #2c3e50;
+      font-size: 1.8rem;
+    }
+
+    h3 {
+      color: #444;
+      margin-top: 2rem;
+      font-size: 1.3rem;
+      border-left: 4px solid #007bff;
+      padding-left: 10px;
+    }
+
+    p, li {
+      line-height: 1.7;
+      color: #4a4a4a;
+    }
+
+    /* Tabela de Dados */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: left;
+    }
+    .data-table thead th {
+      background-color: #f8f9fa;
+      color: #333;
+      font-weight: 700;
+      border-bottom: 2px solid #dee2e6;
+    }
+    .data-table tbody tr:hover {
+      background-color: #f1f3f5;
+    }
+
+    .source-badge {
+      display: inline-block;
+      background: #e9ecef;
+      color: #495057;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .ref-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+    .ref-link:hover {
+        text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -14,33 +96,180 @@
       <a href="scenarios.html">Scenarios</a>
       <a href="casos.html">Data visualization</a>
       <a href="modelo.html">Model & Metrics</a>
-      <a href="about.html"class="active">Data & documentation</a>
+      <a href="about.html" class="active">Data & documentation</a>
     </nav>
   </header>
 
-  <main style="padding: 1.5rem; max-width: 900px; margin: 0 auto;">
-    <h2>Data sources & documentation (placeholder)</h2>
+  <main class="doc-container">
 
-    <p>
-      This page is intended to document the data pipeline behind the
-      yellow fever risk model and the future scenarios. It can be used
-      in your portfolio to show transparency and reproducibility.
-    </p>
+    <section class="section-block">
+      <h2>Data Sources & Acquisition</h2>
+      <p>
+        The dataset integrates epidemiological, environmental, and demographic variables at the municipality level across Brazil. Data was aggregated into 5-year clusters (2001–2020) to capture temporal trends.
+      </p>
 
-    <h3>Suggested sections to add later</h3>
-    <ul>
-      <li>Environmental data (WorldClim, land use / MapBiomas or similar).</li>
-      <li>Population and density (WorldPop or IBGE projections).</li>
-      <li>Yellow fever vaccination coverage (DATASUS / PNI).</li>
-      <li>Historical YF cases and epizootics (SINAN / surveillance datasets).</li>
-      <li>Derivation of derived variables (forest loss proxy, cluster-based population, etc.).</li>
-      <li>Limitations and assumptions of this portfolio model.</li>
-    </ul>
+      <h3>1. Epidemiological Data</h3>
+      <p>
+        <strong>Yellow Fever Occurrences (Target Variable):</strong> Binary classification (0/1) indicating the presence of confirmed Yellow Fever cases (human or epizootic) in a municipality-period.
+      </p>
+      <ul>
+        <li><strong>Source:</strong> Ministry of Health / SINAN (Sistema de Informação de Agravos de Notificação).</li>
+        <li><strong>Reference:</strong> <a href="#" class="ref-link">[INSERT LINK TO DATASUS/SINAN]</a></li>
+        <li><strong>Processing:</strong> Data cleaned to remove inconsistencies; aggregated by municipality and cluster period.</li>
+      </ul>
 
-    <p>
-      For GitHub Pages, you can keep this page lightweight and link to
-      external repositories, preprints or datasets if needed.
-    </p>
+      <h3>2. Environmental Predictors</h3>
+      <p>
+        <strong>Climatic Variables:</strong> Monthly averages for Maximum Temperature, Minimum Temperature, Precipitation, and Vapor Pressure Deficit (VPD).
+      </p>
+      <ul>
+        <li><strong>Source:</strong> WorldClim v2.1 (Historical) / Mathematical Simulation based on MIROC6 SSP2-4.5 (Future).</li>
+        <li><strong>Reference:</strong> <a href="#" class="ref-link">[INSERT LINK TO WORLDCLIM]</a></li>
+        <li><strong>Resolution:</strong> ~1km spatial resolution, aggregated to municipality mean.</li>
+      </ul>
+
+      <p>
+        <strong>Land Use & Cover:</strong> Percentage of municipality area covered by Forest, Pasture, and Urban infrastructure.
+      </p>
+      <ul>
+        <li><strong>Source:</strong> MapBiomas Collection [INSERT VERSION, e.g., 6.0 or 7.0].</li>
+        <li><strong>Reference:</strong> <a href="#" class="ref-link">[INSERT LINK TO MAPBIOMAS]</a></li>
+        <li><strong>Processing:</strong> Normalized area calculation (km²) relative to total municipality size.</li>
+      </ul>
+
+      <h3>3. Demographic & Vaccination Data</h3>
+      <p>
+        <strong>Population:</strong> Absolute population counts and density.
+        <span class="source-badge">IBGE</span>
+      </p>
+      <p>
+        <strong>Vaccination Coverage:</strong> Estimated coverage of Yellow Fever vaccine in the target population.
+        <span class="source-badge">PNI / DATASUS</span>
+      </p>
+    </section>
+
+    <section class="section-block">
+      <h2>Descriptive Statistics (Baseline Dataset)</h2>
+      <p>
+        Summary statistics of the main predictors used in the training phase (2001–2020).
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Mean ± Std Dev</th>
+            <th>Min</th>
+            <th>Max</th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+  <td><strong>Yfv Ocorreu</strong> <span style="font-size:0.8em; color:#666;">(yfv_ocorreu)</span></td>
+  <td>0.04 ± 0.20</td>
+  <td>0.00</td>
+  <td>1.00</td>
+  <td>Original unit/Index</td>
+</tr>
+
+<tr>
+  <td><strong>Vac Coverage</strong> <span style="font-size:0.8em; color:#666;">(vac_coverage)</span></td>
+  <td>0.58 ± 0.39</td>
+  <td>0.00</td>
+  <td>1.00</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Not Vaccinated Pct</strong> <span style="font-size:0.8em; color:#666;">(not_vaccinated_pct)</span></td>
+  <td>0.42 ± 0.39</td>
+  <td>0.00</td>
+  <td>1.00</td>
+  <td>Original unit/Index</td>
+</tr>
+
+<tr>
+  <td><strong>Pop Ibge Cluster</strong> <span style="font-size:0.8em; color:#666;">(pop_ibge_cluster)</span></td>
+  <td>34757.22 ± 209242.82</td>
+  <td>724.00</td>
+  <td>12130536.00</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Pop Density Last</strong> <span style="font-size:0.8em; color:#666;">(pop_density_last)</span></td>
+  <td>120.03 ± 618.07</td>
+  <td>0.09</td>
+  <td>13523.15</td>
+  <td>Original unit/Index</td>
+</tr>
+
+<tr>
+  <td><strong>Tmax</strong> <span style="font-size:0.8em; color:#666;">(tmax_mean)</span></td>
+  <td>28.16 ± 2.96</td>
+  <td>18.32</td>
+  <td>35.09</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Tmin</strong> <span style="font-size:0.8em; color:#666;">(tmin_mean)</span></td>
+  <td>17.26 ± 3.14</td>
+  <td>8.73</td>
+  <td>24.61</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Ppt</strong> <span style="font-size:0.8em; color:#666;">(ppt_mean)</span></td>
+  <td>112.21 ± 39.57</td>
+  <td>22.03</td>
+  <td>321.45</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Vpd</strong> <span style="font-size:0.8em; color:#666;">(vpd_mean)</span></td>
+  <td>0.84 ± 0.27</td>
+  <td>0.30</td>
+  <td>2.01</td>
+  <td>Original unit/Index</td>
+</tr>
+
+<tr>
+  <td><strong>Forest Formation-Mean</strong> <span style="font-size:0.8em; color:#666;">(Forest_formation-mean_normalized)</span></td>
+  <td>0.00 ± 0.00</td>
+  <td>0.00</td>
+  <td>0.05</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Pasture-Mean</strong> <span style="font-size:0.8em; color:#666;">(Pasture-mean_normalized)</span></td>
+  <td>0.00 ± 0.00</td>
+  <td>0.00</td>
+  <td>0.22</td>
+  <td>Original unit/Index</td>
+</tr>
+<tr>
+  <td><strong>Urban Area-Mean</strong> <span style="font-size:0.8em; color:#666;">(Urban_area-mean_normalized)</span></td>
+  <td>0.00 ± 0.02</td>
+  <td>0.00</td>
+  <td>1.00</td>
+  <td>Original unit/Index</td>
+</tr>
+          </tbody>
+      </table>
+    </section>
+
+    <section class="section-block">
+      <h2>Assumptions & Limitations</h2>
+      <p>
+        While this model provides a robust framework for risk assessment, the following limitations should be considered:
+      </p>
+      <ul>
+        <li><strong>Underreporting:</strong> Historical data depends on notification systems. Areas with weak surveillance may have false negatives (recorded as 0, but had undiagnosed cases).</li>
+        <li><strong>Spatial Aggregation:</strong> Using municipality-level means can mask local heterogeneities (e.g., a municipality might be 90% urban but have a small, high-risk forest fringe).</li>
+        <li><strong>Future Simulations:</strong> The scenarios for 2021–2040 are mathematical simulations of sensitivity based on the SSP2-4.5 trends, not dynamic biological forecasts. They assume stationarity in the relationship between climate and transmission.</li>
+        <li><strong>Vaccination Data:</strong> Coverage estimates can exceed 100% or contain errors due to population mobility and census inaccuracies. We capped coverage at 1.0 (100%) for modeling purposes.</li>
+      </ul>
+    </section>
+
   </main>
 </body>
 </html>
