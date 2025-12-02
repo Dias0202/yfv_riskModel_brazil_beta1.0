@@ -80,21 +80,27 @@ This is a static web project (HTML/CSS/JS). You don't need a backend server to r
 ---
 
 ## 📁 Repository Structure
-  css/ # Stylesheets 
-  data/ # Datasets
-  scenarios/ # CSV files for specific future scenarios (A-G)
-  datasetFinal.csv # Baseline historical data for visualization 
-  *.geojson # Simplified geometry for Brazilian municipalities 
-  img/ # Logos, charts, and plots
-  js/ # Application logic (Leaflet maps, interaction) 
-  *.html # Main site pages (index, scenarios, model, etc.) 
-  README.md # Project documentation
+
+```text
+├── css/                # Stylesheets
+├── data/               # Datasets
+│   ├── scenarios/      # CSV files for specific future scenarios (A-G)
+│   ├── datasetFinal.csv # Baseline historical data for visualization
+│   └── *.geojson       # Simplified geometry for Brazilian municipalities
+├── img/                # Logos, charts, and plots
+├── js/                 # Application logic (Leaflet maps, interaction)
+├── *.html              # Main site pages (index, scenarios, model, etc.)
+└── README.md           # Project documentation
+```
+
 ---
 
 ## 🤝 Authors & Acknowledgments
 
 **Lead Developer & Researcher:**
-* **Gabriel Dias Moreira, PhD** - [Contact](mailto:gabriel.dias05082000@gmail.com)
+* **Gabriel Dias Moreira** - [Contact](mailto:gabriel.dias05082000@gmail.com)
+* **PhD, Marina Beirão** -
+* **PhD, Betania Paiva Drumond**   
 
 **Affiliations:**
 * Virus Laboratory - UFMG (Universidade Federal de Minas Gerais)
