@@ -99,7 +99,7 @@ This is a static web project (HTML/CSS/JS). You don't need a backend server to r
 
 **Lead Developer & Researcher:**
 * **Gabriel Dias Moreira** - [Contact](mailto:gabriel.dias05082000@gmail.com)
-* **PhD, Marina Beirão** -
+* **PhD, Marina Beirão** 
 * **PhD, Betania Paiva Drumond**   
 
 **Affiliations:**
