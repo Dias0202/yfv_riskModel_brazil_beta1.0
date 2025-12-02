@@ -14,7 +14,7 @@ const ALL_VARIABLES = [
   "Urban_area-mean_normalized",
   "tmax_mean",   
   "ppt_mean",    
-  "pop_density_last"
+  "pop_ibge_cluster"
 ];
 // Descrições das variáveis
 const VARIABLE_DESCRIPTIONS = {
@@ -472,6 +472,7 @@ function debugData(codMun) {
 
 
 window.debugData = debugData;
+
 
 
 
