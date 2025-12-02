@@ -307,52 +307,79 @@
     <section class="section-block">
       <h2>Future Scenarios Methodology (2021–2040)</h2>
       <p>
-        To project risk into the future, we developed a simulation framework based on the <strong>SSP2-4.5</strong> climate change pathway (IPCC AR6). Since future biological data is unavailable, we applied mathematical transformations to the baseline features to create synthetic future states.
+        To project risk into the future, we developed a simulation framework based on the <strong>SSP2-4.5</strong> climate change pathway (IPCC AR6). 
+        Since future biological data is unavailable at the municipal level, we applied mathematical transformations to the baseline features to create synthetic future states.
+      </p>
+
+      <h3>1. Climate Proxy (Applied to ALL Scenarios)</h3>
+      <p>
+        All scenarios (A through G) share the same underlying climatic assumptions, simulating a warmer and slightly drier future typical of intermediate emission projections for Brazil in the near term (2021–2040):
+      </p>
+      <ul style="margin-bottom: 1.5rem; background: #f8f9fa; padding: 1rem 2rem; border-radius: 6px; border-left: 4px solid #007bff;">
+        <li><strong>Temperature:</strong> <code>tmax_mean + 1.5°C</code> and <code>tmin_mean + 1.5°C</code></li>
+        <li><strong>Precipitation:</strong> <code>ppt_mean × 0.95</code> (5% reduction)</li>
+        <li><strong>Vapor Pressure (VPD):</strong> <code>vpd_mean × 1.05</code> (5% increase in atmospheric water demand)</li>
+      </ul>
+
+      <h3>2. Specific Scenario Definitions</h3>
+      <p>
+        On top of the climate proxy, we simulated specific variations in vaccination coverage, demographics, and land use to isolate the effect of each driver.
       </p>
 
       <table class="tech-table">
         <thead>
           <tr>
-            <th style="width: 25%;">Variable Group</th>
-            <th>Simulation Logic (SSP2-4.5 Proxy)</th>
-            <th>Rationale</th>
+            <th style="width: 25%;">Scenario ID</th>
+            <th style="width: 35%;">Simulation Logic</th>
+            <th>Description & Rationale</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>Temperature</strong></td>
-            <td><code>tmax_mean + 1.5°C</code></td>
-            <td>Consistent with near-term warming projections for Brazil under intermediate emissions.</td>
+            <td><strong>A – Climate Only</strong><br><span style="font-size:0.85em; color:#666;">(Baseline)</span></td>
+            <td>Climate Proxy + Baseline variables</td>
+            <td><strong>Reference Scenario:</strong> Assumes that vaccination, population, and land use remain at current levels, identifying risk driven solely by climate change.</td>
           </tr>
           <tr>
-            <td><strong>Precipitation</strong></td>
-            <td><code>ppt_mean × 0.95</code> (-5%)</td>
-            <td>Simulates the trend of reduced rainfall and increased drought frequency in tropical areas.</td>
+            <td><strong>B – Vaccination Up</strong></td>
+            <td><code>vac_coverage × 1.20</code><br>(Capped at 1.0)</td>
+            <td><strong>Public Health Success:</strong> Simulates a 20% increase in effective immunization coverage across all municipalities.</td>
           </tr>
           <tr>
-            <td><strong>Vapor Pressure (VPD)</strong></td>
-            <td><code>vpd_mean × 1.05</code> (+5%)</td>
-            <td>Drier air increases water stress, affecting vector survival and forest health.</td>
+            <td><strong>C – Vaccination Down</strong></td>
+            <td><code>vac_coverage × 0.80</code></td>
+            <td><strong>Hesitancy/Failures:</strong> Simulates a 20% drop in coverage, highlighting areas vulnerable to re-emergence due to lower herd immunity.</td>
           </tr>
           <tr>
-            <td><strong>Demography</strong></td>
-            <td><code>pop_absolute × 1.15</code> (Scenario D)</td>
-            <td>Projected population growth, increasing the number of people exposed to the silvatic cycle.</td>
+            <td><strong>D – Population Up</strong></td>
+            <td><code>pop_absolute × 1.15</code></td>
+            <td><strong>Demographic Growth:</strong> A 15% increase in population size, increasing the density of humans at the peri-urban interface.</td>
           </tr>
           <tr>
-            <td><strong>Vaccination</strong></td>
-            <td>Dynamic (±20%)</td>
-            <td>Scenarios B and C simulate the success or failure of public health campaigns (PNI).</td>
+            <td><strong>E – Population Down</strong></td>
+            <td><code>pop_absolute × 0.90</code></td>
+            <td><strong>Demographic Decline:</strong> A 10% reduction in population, simulating out-migration from rural/risk areas.</td>
+          </tr>
+          <tr>
+            <td><strong>F – Agro-Expansion</strong></td>
+            <td><code>Pasture × 1.2</code><br><code>Urban × 1.1</code><br><code>Forest × 0.95</code></td>
+            <td><strong>Land-Use Change:</strong> Simulates agricultural frontier expansion with pasture conversion (+20%) and urbanization (+10%) at the expense of forest cover (-5%).</td>
+          </tr>
+          <tr>
+            <td><strong>G – Conservation</strong></td>
+            <td><code>Forest × 1.10</code><br><code>Pasture × 0.90</code></td>
+            <td><strong>Reforestation:</strong> Simulates a conservation effort with a 10% increase in forest cover and reduction in pasture land.</td>
           </tr>
         </tbody>
       </table>
       
       <p style="font-size: 0.9rem; margin-top: 1rem; padding: 1rem; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 4px; color: #856404;">
-        <strong>Note:</strong> These scenarios are <em>simulations of sensitivity</em>. They answer "What if?" questions (e.g., "What if vaccination drops 20% while the climate warms?") rather than providing deterministic forecasts.
+        <strong>Note:</strong> These scenarios are mathematical sensitivity analyses answering "What if?" questions. They isolate specific drivers to help policymakers understand which factors (e.g., vaccination vs. deforestation) have the highest impact on local risk.
       </p>
     </section>
 
   </main>
 </body>
 </html>
+
 
