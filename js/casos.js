@@ -20,23 +20,25 @@ const ALL_VARIABLES = [
 // Descrições das variáveis
 const VARIABLE_DESCRIPTIONS = {
   yfv_ocorreu:
-    "Binary indicator (0/1) of Yellow Fever occurrence in the municipality during the selected time period.",
+    "Binary indicator (0/1) of Yellow Fever occurrence.",
   vac_coverage:
-    "Vaccination coverage rate (0-1) representing the proportion of population vaccinated against Yellow Fever.",
+    "Vaccination coverage rate (0-1).",
   "Forest_formation-mean_normalized":
-    "Normalized mean of forest formation coverage. Higher values indicate more forest cover.",
+    "Normalized mean of forest formation coverage.",
   "Pasture-mean_normalized":
-    "Normalized mean of pasture area. Higher values indicate more pasture land.",
+    "Normalized mean of pasture area.",
   "Urban_area-mean_normalized":
-    "Normalized mean of urban area. Higher values indicate more urban development.",
-  "Bio1-mean_z":
-    "Standardized mean annual temperature (WorldClim Bio1). Positive values = warmer, negative = cooler (z-score).",
-  "Bio12-mean_z":
-    "Standardized annual precipitation (WorldClim Bio12). Positive values = wetter, negative = drier (z-score).",
+    "Normalized mean of urban area.",
+  // NOVAS DESCRIÇÕES
+  "tmax_mean":
+    "Average Maximum Temperature (°C). Simulates warming in future scenarios.",
+  "ppt_mean":
+    "Average Precipitation (mm). Simulates rainfall patterns.",
+  // FIM NOVAS DESCRIÇÕES
   pop_density_last:
-    "Population density (people per km²) in the most recent year of the time period.",
+    "Population density (people per km²).",
   forest_loss_rate_proxy:
-    "Proxy for forest loss rate. Higher values indicate more rapid deforestation."
+    "Proxy for forest loss rate."
 };
 
 // Períodos temporais
@@ -331,14 +333,22 @@ function getColorForVariable(value, variable) {
     return "#f8f8f8";
   }
 
-  // 3) Z-scores: paleta divergente centrada em 0
-  if (variable === "Bio1-mean_z" || variable === "Bio12-mean_z") {
-    if (value >= 2) return "#b2182b";
-    if (value >= 1) return "#ef8a62";
-    if (value >= 0) return "#fddbc7";
-    if (value >= -1) return "#d1e5f0";
-    if (value >= -2) return "#67a9cf";
-    return "#2166ac";
+  // 3) Clima (tmax e ppt)
+  if (variable === "tmax_mean") {
+     // Temperatura: quanto mais quente, mais vermelho
+     if (value >= 32) return "#b2182b";
+     if (value >= 30) return "#d6604d";
+     if (value >= 28) return "#f4a582";
+     if (value >= 26) return "#fddbc7";
+     return "#f7f7f7";
+  }
+  if (variable === "ppt_mean") {
+     // Chuva: quanto mais chuva, mais azul
+     if (value >= 200) return "#053061";
+     if (value >= 150) return "#2166ac";
+     if (value >= 100) return "#4393c3";
+     if (value >= 50)  return "#92c5de";
+     return "#f7f7f7";
   }
 
   // 4) Demais variáveis contínuas: escala por quantis (0.05–0.95)
@@ -463,3 +473,4 @@ function debugData(codMun) {
 
 
 window.debugData = debugData;
+
